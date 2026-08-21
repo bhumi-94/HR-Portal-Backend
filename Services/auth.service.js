@@ -8,7 +8,6 @@ const db = require("../Configurations/db.config")
 
 // REGISTER
 
-
 const registerUser = async ({
   firstname,
   lastname,
@@ -37,6 +36,8 @@ const registerUser = async ({
     throw new Error("Email already registered");
   }
 
+
+  console.log("PASSWORD RECEIVED IN SERVICE:", password);
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -90,7 +91,7 @@ await db.query(
   `UPDATE users
    SET profile_image = ?
    WHERE id = ?`,
-  [profileImage, userId]
+  [profileImage, result.insertId]
 );
   return {
     userId: result.insertId,
@@ -136,7 +137,7 @@ const loginUser = async (email, password) => {
   },
   process.env.JWT_SECRET_KEY,
   {
-    expiresIn: "1d",
+    expiresIn: "7d",
   }
 );
   // 6. Return user + token
