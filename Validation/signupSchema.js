@@ -1,9 +1,9 @@
 const yup = require("yup");
 
 const signupSchema = yup.object().shape({
-  // =========================
+ 
   // PERSONAL INFORMATION
-  // =========================
+  
 
   firstname: yup
     .string()
@@ -56,9 +56,9 @@ const signupSchema = yup.object().shape({
     .string()
     .required("Gender is required"),
 
-  // =========================
+   
   // WORK INFORMATION
-  // =========================
+   
 
   department: yup
     .string()
@@ -70,9 +70,9 @@ const signupSchema = yup.object().shape({
     .trim()
     .required("Job title is required"),
 
-  // =========================
+   
   // PASSWORD
-  // =========================
+   
 
   password: yup
     .string()
@@ -87,10 +87,8 @@ const signupSchema = yup.object().shape({
       "Passwords must match"
     ),
 
-  // =========================
-  // TERMS
-  // =========================
-
+     // TERMS
+   
   terms: yup
     .boolean()
     .oneOf(

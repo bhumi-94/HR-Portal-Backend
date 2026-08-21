@@ -4,6 +4,7 @@ const signupSchema = require("../Validation/signupSchema");
 // REGISTER
 const register = async (req, res) => {
   try {
+    
     const {
       firstname,
       lastname,
@@ -16,16 +17,14 @@ const register = async (req, res) => {
       department,
       job_title,
       password
-    } = req.body;
+    } = req.body || {} 
 
+    console.log("PASSWORD IN CONTROLLER:", password);
+    
     // Get uploaded profile image
     const profileImage = req.file
       ? `/uploads/${req.file.filename}`
       : null;
-
-    console.log("REGISTER BODY:", req.body);
-    console.log("UPLOADED FILE:", req.file);
-    console.log("PROFILE IMAGE:", profileImage);
 
     const result = await authService.registerUser({
       firstname,
@@ -39,7 +38,7 @@ const register = async (req, res) => {
       department,
       job_title,
       password,
-      profileImage, 
+      profileImage,
     });
 
     res.status(201).json({
@@ -57,20 +56,21 @@ const register = async (req, res) => {
     });
   }
 };
-// LOGIN
 
+
+// LOGIN
 
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password  } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email and password are required",
+        message: "Email/Username and password are required",
       });
     }
-    const result = await authService.loginUser(email, password);
+    const result = await authService.loginUser(email , password);
     return res.status(200).json({
       success: true,
       message: "Login successful",

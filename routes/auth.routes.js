@@ -8,7 +8,7 @@ const {
   getCurrentUser,
 } = require("../Controllers/auth.Controller");
 
-const authMiddleware = require("../middleware/auth.midlleware");
+const authMiddleware = require("../middleware/auth.middleware");
 
 const upload = require("../uploads/uploads");
 
@@ -17,12 +17,6 @@ const {
 } = require("../Controllers/user.Controller");
 
 const router = express.Router();
-
-console.log("authMiddleware:", typeof authMiddleware);
-console.log("upload:", typeof upload);
-console.log("upload.single:", typeof upload?.single);
-console.log("uploadProfilePic:", typeof uploadProfilePic);
-
 // REGISTER
 router.post("/register", register);
 

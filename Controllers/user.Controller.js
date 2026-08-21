@@ -53,7 +53,6 @@ const updateUserStatus = async (req, res) => {
     });
   }
 }
-
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -76,36 +75,6 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// const uploadProfilePic = async (req, res) => {
-//   try {
-//     if (!req.file) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Please select an image",
-//       });
-//     }
-
-//     const profile_image = `/uploads/${req.file.filename}`;
-
-//     await db.query(
-//       "UPDATE users SET profile_pic = ? WHERE id = ?",
-//       [profile_image, req.user.id]
-//     );
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Profile picture updated successfully",
-//       profile_image,
-//     });
-//   } catch (error) {
-//     console.error("Profile picture upload error:", error);
-
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to update profile picture",
-//     });
-//   }
-// };
 
 const uploadProfilePic = async (req, res) => {
   try {

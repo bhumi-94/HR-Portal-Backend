@@ -25,11 +25,7 @@ const getAllUsers = async () => {
   return rows;
 };
 
-
-// ===============================
 // UPDATE USER STATUS
-// ===============================
-
 const updateUserStatus = async (id, isActive) => {
   const [result] = await db.query(
     `
