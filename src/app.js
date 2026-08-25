@@ -6,6 +6,7 @@ require("../Configurations/db.config");
 const authRoutes = require("../routes/auth.routes");
 const userRoutes = require("../routes/user.routes");
 const attendanceRoutes = require("../routes/attendance.routes");
+const leaveRoutes = require("../routes/leave.routes")
 
 
 app.use(
@@ -25,6 +26,8 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/attendance" , attendanceRoutes )
+app.use("/api/leave", leaveRoutes);
+// app.use("/api/leave", );
 
 module.exports = app;
 
