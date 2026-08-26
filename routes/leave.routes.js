@@ -1,33 +1,40 @@
 const express = require("express");
-const router = express.Router()
 
-const { requestLeave , getLeaveSummary , getMyLeaveRequests } = require("../Controllers/leave.controller")
-const authMiddleware = require("../Middleware/auth.middleware");
+const router = express.Router();
 
+const {
+  requestLeave,
+  getLeaveSummary,
+  getMyLeaveRequests,
+  getAllLeaveRequests,
+  approveLeaveRequest,
+  rejectLeaveRequest,
+} = require("../Controllers/leave.controller");
 
-router.post(
-  "/request",
-  authMiddleware,
-  requestLeave
-);
+const authMiddleware = require("../middleware/auth.middleware");
 
-router.get(
-  "/summary",
-  authMiddleware,
-  getLeaveSummary
-);
+// CREATE LEAVE REQUEST
+// POST /api/leave/request
 
-router.get(
-  "/my-leaves",
-  authMiddleware,
-  getMyLeaveRequests
-);
+router.post("/request", authMiddleware, requestLeave);
 
+// GET LEAVE SUMMARY
+// GET /api/leave/summary
 
+router.get("/summary", authMiddleware, getLeaveSummary);
 
-module.exports = router
+// GET MY LEAVE REQUESTS
+// GET /api/leave/my
 
+router.get("/my", authMiddleware, getMyLeaveRequests);
+//----------------hr dashboard routes -------------
 
+router.get("/all", authMiddleware, getAllLeaveRequests);
 
+// HR approves leave
+router.put("/:id/approve", authMiddleware, approveLeaveRequest);
 
+// HR rejects leave
+router.put("/:id/reject", authMiddleware, rejectLeaveRequest);
 
+module.exports = router;

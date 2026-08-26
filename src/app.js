@@ -8,7 +8,6 @@ const userRoutes = require("../routes/user.routes");
 const attendanceRoutes = require("../routes/attendance.routes");
 const leaveRoutes = require("../routes/leave.routes")
 
-
 app.use(
   "/uploads",
   express.static(path.join(__dirname, "../uploads"))
@@ -27,7 +26,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/attendance" , attendanceRoutes )
 app.use("/api/leave", leaveRoutes);
-// app.use("/api/leave", );
 
 module.exports = app;
 
