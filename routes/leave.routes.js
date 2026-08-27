@@ -9,6 +9,7 @@ const {
   getAllLeaveRequests,
   approveLeaveRequest,
   rejectLeaveRequest,
+  getUserLeaveHistory
 } = require("../Controllers/leave.controller");
 
 const authMiddleware = require("../middleware/auth.middleware");
@@ -36,5 +37,12 @@ router.put("/:id/approve", authMiddleware, approveLeaveRequest);
 
 // HR rejects leave
 router.put("/:id/reject", authMiddleware, rejectLeaveRequest);
+
+// User Leave History Route
+router.get(
+  "/getLeaveHistory",
+  authMiddleware,
+  getUserLeaveHistory
+);
 
 module.exports = router;
