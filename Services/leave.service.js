@@ -1,7 +1,7 @@
 const db = require("../Configurations/db.config");
-  
+
 // CREATE LEAVE REQUEST
-  
+
 const createLeaveRequest = async ({
   userId,
   leaveType,
@@ -36,9 +36,7 @@ const createLeaveRequest = async ({
   return result;
 };
 
-    
 // GET EMPLOYEE
-    
 
 const getEmployeeById = async (userId) => {
   const query = `
@@ -90,7 +88,6 @@ const getLeaveBalance = async (userId) => {
   return rows[0];
 };
 
-
 // GET LEAVE SUMMARY
 const getLeaveSummary = async (userId) => {
   const query = `
@@ -123,7 +120,6 @@ const getLeaveSummary = async (userId) => {
   const [rows] = await db.execute(query, [userId]);
 
   // Every employee gets 7 Sick + 7 Casual leaves
-     
 
   const summary = {
     sick: {
@@ -152,39 +148,30 @@ const getLeaveSummary = async (userId) => {
     const approvedDays = Number(row.approved_days || 0);
     const pendingDays = Number(row.pending_days || 0);
 
-       
     // SICK LEAVE
-       
 
     if (row.leave_type === "Sick Leave") {
       summary.sick.used = approvedDays;
 
-      summary.sick.remaining = Math.max(
-        0,
-        summary.sick.total - approvedDays
-      );
+      summary.sick.remaining = Math.max(0, summary.sick.total - approvedDays);
 
       summary.sick.pending = pendingDays;
     }
 
-       
     // CASUAL LEAVE
-       
 
     if (row.leave_type === "Casual Leave") {
       summary.casual.used = approvedDays;
 
       summary.casual.remaining = Math.max(
         0,
-        summary.casual.total - approvedDays
+        summary.casual.total - approvedDays,
       );
 
       summary.casual.pending = pendingDays;
     }
 
-       
     // WFH
-       
 
     if (row.leave_type === "WFH") {
       summary.wfh.used = approvedDays;
@@ -195,11 +182,12 @@ const getLeaveSummary = async (userId) => {
   return summary;
 };
 
-    
 // GET MY LEAVE REQUESTS
-    
-
 const getMyLeaveRequests = async (userId) => {
+  console.log("========== GET MY LEAVE REQUESTS ==========");
+
+  console.log("Received userId:", userId);
+
   const query = `
     SELECT
       id,
@@ -216,43 +204,16 @@ const getMyLeaveRequests = async (userId) => {
     ORDER BY created_at DESC
   `;
 
+  console.log("Executing leave history query...");
+
   const [rows] = await db.execute(query, [userId]);
+
+  console.log("QUERY COMPLETED");
+
+  console.log("ROWS:", rows);
 
   return rows;
 };
-
-// const getAllLeaveRequests = async () => {
-//   const query = `
-//     SELECT
-//       lr.id,
-//       lr.user_id,
-//       lr.leave_type,
-//       lr.start_date,
-//       lr.end_date,
-//       lr.duration,
-//       lr.reason,
-//       lr.status,
-//       lr.created_at,
-//       lr.updated_at,
-
-//       u.employee_id,
-//       u.firstname,
-//       u.lastname,
-//       u.working_email,
-//       u.personal_email
-
-//     FROM leave_requests lr
-
-//     INNER JOIN users u
-//       ON lr.user_id = u.id
-
-//     ORDER BY lr.created_at DESC
-//   `;
-
-//   const [rows] = await db.execute(query);
-
-//   return rows;
-// };
 
 const getAllLeaveRequests = async () => {
   const query = `
@@ -471,9 +432,26 @@ const rejectLeaveRequest = async (leaveId) => {
   };
 };
 
-    
-// EXPORT
-    
+const getUserLeaveHistory = async (userId) => {
+  const [rows] = await db.query(
+    `SELECT
+      l.id,
+      l.leave_type,
+      l.start_date,
+      l.end_date,
+      l.duration,
+      l.reason,
+      l.status,
+      l.created_at
+    FROM leave_requests l
+    WHERE l.user_id = ?
+    ORDER BY l.created_at DESC
+    `,
+    [userId],
+  );
+
+  return rows;
+};
 
 module.exports = {
   createLeaveRequest,
@@ -483,5 +461,6 @@ module.exports = {
   getMyLeaveRequests,
   getAllLeaveRequests,
   approveLeaveRequest,
-  rejectLeaveRequest
+  rejectLeaveRequest,
+  getUserLeaveHistory,
 };
