@@ -1,5 +1,6 @@
 const leaveService = require("../Services/leave.service");
 const { sendLeaveRequestEmail } = require("../utils/email");
+const notificationService = require("../Services/notification.service");
 
 // CREATE LEAVE REQUEST - EMPLOYEE
 
@@ -92,6 +93,18 @@ const requestLeave = async (req, res) => {
       reason,
     });
 
+    const hrUsers = await notificationService.getHRUsers();
+
+    for (const hr of hrUsers) {
+      await notificationService.createNotification({
+        userid: hr.id,
+        type: "Leave Requests",
+        title: "New Leave Requests",
+        message: `${employee.firstname} ${employee.lastname} has Submitted the a ${leaveType} request.`,
+        referenceId: result.insertId,
+      });
+    }
+
     // GET EMPLOYEE DETAILS
 
     const employee = await leaveService.getEmployeeById(userId);
@@ -139,16 +152,13 @@ const requestLeave = async (req, res) => {
 const getLeaveSummary = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const summary = await leaveService.getLeaveSummary(userId);
-
     return res.status(200).json({
       success: true,
       data: summary,
     });
   } catch (error) {
     console.error("Leave summary error:", error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch leave summary",
@@ -162,9 +172,7 @@ const getLeaveSummary = async (req, res) => {
 const getMyLeaveRequests = async (req, res) => {
   try {
     const userId = req.user.id;
-
     const leaves = await leaveService.getMyLeaveRequests(userId);
-
     return res.status(200).json({
       success: true,
       data: leaves,
@@ -203,22 +211,51 @@ const getAllLeaveRequests = async (req, res) => {
 
 // APPROVE LEAVE REQUEST - HR
 
+// =====================================================
+// APPROVE LEAVE REQUEST - HR
+// =====================================================
+
 const approveLeaveRequest = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { leaveId } = req.params;
 
-    // VALIDATE ID
+    console.log("========== APPROVE LEAVE ==========");
+    console.log("Leave ID:", leaveId);
 
-    if (!id) {
+    // Validate ID
+    if (!leaveId) {
       return res.status(400).json({
         success: false,
         message: "Leave ID is required",
       });
     }
 
-    // APPROVE LEAVE
+    // Get leave request
+    const leave = await leaveService.getLeaveRequestById(leaveId);
 
-    const result = await leaveService.approveLeaveRequest(id);
+    console.log("Leave request:", leave);
+
+    if (!leave) {
+      return res.status(404).json({
+        success: false,
+        message: "Leave request not found",
+      });
+    }
+
+    // Approve leave
+    const result = await leaveService.approveLeaveRequest(leaveId);
+
+    console.log("Approve result:", result);
+
+    // Send notification to employee
+    await notificationService.createNotification({
+      userId: leave.user_id,
+      type: "LEAVE",
+      title: "Leave Approved ✅",
+      message: `Your ${leave.leave_type} request has been approved by HR.`,
+    });
+
+    console.log("Approval notification created for user:", leave.user_id);
 
     return res.status(200).json({
       success: true,
@@ -235,24 +272,51 @@ const approveLeaveRequest = async (req, res) => {
   }
 };
 
+// =====================================================
 // REJECT LEAVE REQUEST - HR
+// =====================================================
 
 const rejectLeaveRequest = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { leaveId } = req.params;
 
-    // VALIDATE ID
+    console.log("========== REJECT LEAVE ==========");
+    console.log("Leave ID:", leaveId);
 
-    if (!id) {
+    // Validate ID
+    if (!leaveId) {
       return res.status(400).json({
         success: false,
         message: "Leave ID is required",
       });
     }
 
-    // REJECT LEAVE
+    // Get leave request
+    const leave = await leaveService.getLeaveRequestById(leaveId);
 
-    const result = await leaveService.rejectLeaveRequest(id);
+    console.log("Leave request:", leave);
+
+    if (!leave) {
+      return res.status(404).json({
+        success: false,
+        message: "Leave request not found",
+      });
+    }
+
+    // Reject leave
+    const result = await leaveService.rejectLeaveRequest(leaveId);
+
+    console.log("Reject result:", result);
+
+    // Send notification to employee
+    await notificationService.createNotification({
+      userId: leave.user_id,
+      type: "LEAVE",
+      title: "Leave Rejected ❌",
+      message: `Your ${leave.leave_type} request has been rejected by HR.`,
+    });
+
+    console.log("Rejection notification created for user:", leave.user_id);
 
     return res.status(200).json({
       success: true,
@@ -268,6 +332,7 @@ const rejectLeaveRequest = async (req, res) => {
     });
   }
 };
+
 const getUserLeaveHistory = async (req, res) => {
   try {
     console.log("========== HISTORY API START ==========");

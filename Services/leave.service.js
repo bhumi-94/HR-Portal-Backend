@@ -1,4 +1,5 @@
 const db = require("../Configurations/db.config");
+const notificationService = require("./notification.service")
 
 // CREATE LEAVE REQUEST
 
@@ -264,11 +265,8 @@ const approveLeaveRequest = async (leaveId) => {
           leave_type,
           duration,
           status
-
         FROM leave_requests
-
         WHERE id = ?
-
         FOR UPDATE
         `,
       [leaveId],
@@ -406,7 +404,7 @@ const approveLeaveRequest = async (leaveId) => {
   }
 };
 
-const rejectLeaveRequest = async (leaveId) => {
+const rejectLeaveRequest = async (id) => {
   const query = `
     UPDATE leave_requests
 
@@ -419,7 +417,7 @@ const rejectLeaveRequest = async (leaveId) => {
     AND status = 'Pending'
   `;
 
-  const [result] = await db.execute(query, [leaveId]);
+  const [result] = await db.execute(query, [id]);
 
   if (result.affectedRows === 0) {
     throw new Error("Leave request not found or already processed");
@@ -452,7 +450,20 @@ const getUserLeaveHistory = async (userId) => {
 
   return rows;
 };
+const getLeaveRequestById = async (id) => {
+  const query = `
+    SELECT *
+    FROM leave_requests
+    WHERE id = ?
+  `;
 
+  const [rows] = await db.execute(
+    query,
+    [id]
+  );
+
+  return rows[0];
+};
 module.exports = {
   createLeaveRequest,
   getEmployeeById,
@@ -463,4 +474,5 @@ module.exports = {
   approveLeaveRequest,
   rejectLeaveRequest,
   getUserLeaveHistory,
+  getLeaveRequestById,
 };
