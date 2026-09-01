@@ -6,15 +6,13 @@ require("../Configurations/db.config");
 const authRoutes = require("../routes/auth.routes");
 const userRoutes = require("../routes/user.routes");
 const attendanceRoutes = require("../routes/attendance.routes");
-const leaveRoutes = require("../routes/leave.routes")
-const holidayRoutes = require("../routes/holiday.routes")
+const leaveRoutes = require("../routes/leave.routes");
+const holidayRoutes = require("../routes/holiday.routes");
+const notificationRoutes = require("../routes/notification.routes");
 
-app.use(
-  "/uploads",
-  express.static(path.join(__dirname, "../uploads"))
-);
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.json());
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
@@ -25,11 +23,9 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/attendance" , attendanceRoutes )
+app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/holidays", holidayRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 module.exports = app;
-
-
-

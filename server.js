@@ -7,3 +7,5 @@ const PORT=process.env.PORT
 app.listen(PORT ,()=>{
     console.log(`👋Welcome to the Backend World 🚀Server is running at ${PORT}`)
 })
+
+require("./Jobs/holidayNotification.job");

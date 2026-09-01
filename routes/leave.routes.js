@@ -33,10 +33,17 @@ router.get("/my", authMiddleware, getMyLeaveRequests);
 router.get("/all", authMiddleware, getAllLeaveRequests);
 
 // HR approves leave
-router.put("/:id/approve", authMiddleware, approveLeaveRequest);
+router.put(
+  "/:leaveId/approve",
+  authMiddleware,
+  approveLeaveRequest
+);
 
-// HR rejects leave
-router.put("/:id/reject", authMiddleware, rejectLeaveRequest);
+router.put(
+  "/:leaveId/reject",
+  authMiddleware,
+  rejectLeaveRequest
+);
 
 // User Leave History Route
 router.get(
