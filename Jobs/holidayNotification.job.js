@@ -5,6 +5,7 @@ const notificationService = require("../Services/notification.service");
 const sendHolidayNotifications = async () => {
   try {
     // Find today's holiday
+
     const [holidays] = await db.execute(`
       SELECT *
       FROM holidays
@@ -16,19 +17,24 @@ const sendHolidayNotifications = async () => {
     }
 
     // Get all active users
+
     const [users] = await db.execute(`
       SELECT id
       FROM users
       WHERE isActive = 1
     `);
 
-    // Send notification to everyone
+    // Send notification
+
     for (const holiday of holidays) {
       for (const user of users) {
         await notificationService.createNotification({
           userId: user.id,
+
           type: "HOLIDAY",
+
           title: "Holiday Today 🎉",
+
           message: `${holiday.occasion} is today.`,
         });
       }
@@ -38,9 +44,12 @@ const sendHolidayNotifications = async () => {
   }
 };
 
-// Run every day at 12:01 AM
 cron.schedule("1 0 * * *", () => {
   console.log("Checking today's holiday...");
 
   sendHolidayNotifications();
 });
+
+module.exports = {
+  sendHolidayNotifications,
+};
