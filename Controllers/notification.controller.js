@@ -1,19 +1,18 @@
-const notificationService =
-  require("../Services/notification.service");
+const notificationService = require("../Services/notification.service");
 
-const getNotifications = async (req, res) => {
+
+const getMyNotifications = async (req, res) => {
+
   try {
 
     const userId = req.user.id;
 
     const notifications =
-      await notificationService.getUserNotifications(
-        userId
-      );
+      await notificationService.getUserNotifications(userId);
 
     return res.status(200).json({
       success: true,
-      notifications,
+      data: notifications,
     });
 
   } catch (error) {
@@ -25,22 +24,63 @@ const getNotifications = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: "Failed to get notifications",
+      message: "Failed to fetch notifications",
     });
   }
 };
 
-const markAsRead = async (req, res) => {
+const getUnreadNotifications = async (req, res) => {
+
   try {
 
     const userId = req.user.id;
 
+    const notifications =
+      await notificationService.getUnreadNotifications(userId);
+
+    return res.status(200).json({
+      success: true,
+      data: notifications,
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Get unread notifications error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch unread notifications",
+    });
+  }
+};
+
+
+// =====================================================
+// MARK ONE AS READ
+// =====================================================
+
+const markAsRead = async (req, res) => {
+
+  try {
+
     const { notificationId } = req.params;
 
-    await notificationService.markNotificationAsRead({
+    const userId = req.user.id;
+
+    if (!notificationId) {
+      return res.status(400).json({
+        success: false,
+        message: "Notification ID is required",
+      });
+    }
+
+    await notificationService.markNotificationAsRead(
       notificationId,
-      userId,
-    });
+      userId
+    );
 
     return res.status(200).json({
       success: true,
@@ -50,19 +90,55 @@ const markAsRead = async (req, res) => {
   } catch (error) {
 
     console.error(
-      "Mark notification error:",
+      "Mark notification read error:",
       error
     );
 
     return res.status(500).json({
       success: false,
-      message: "Failed to update notification",
+      message: "Failed to mark notification as read",
+    });
+  }
+};
+
+
+// =====================================================
+// MARK ALL AS READ
+// =====================================================
+
+const markAllAsRead = async (req, res) => {
+
+  try {
+
+    const userId = req.user.id;
+
+    await notificationService.markAllNotificationsAsRead(
+      userId
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: "All notifications marked as read",
+    });
+
+  } catch (error) {
+
+    console.error(
+      "Mark all notifications error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to mark notifications as read",
     });
   }
 };
 
 
 module.exports = {
-  getNotifications,
+  getMyNotifications,
+  getUnreadNotifications,
   markAsRead,
+  markAllAsRead,
 };
