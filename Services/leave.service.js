@@ -204,14 +204,7 @@ const getMyLeaveRequests = async (userId) => {
     ORDER BY created_at DESC
   `;
 
-  console.log("Executing leave history query...");
-
   const [rows] = await db.execute(query, [userId]);
-
-  console.log("QUERY COMPLETED");
-
-  console.log("ROWS:", rows);
-
   return rows;
 };
 
@@ -280,14 +273,6 @@ const approveLeaveRequest = async (leaveId) => {
     const leave = leaveRows[0];
 
     console.log("Leave being approved:", leave);
-
-    // await notificationService.createNotification({
-    //   userId: employeeId,
-    //   type: "LEAVE_APPROVED",
-    //   title: "Leave Request Approved ✅",
-    //   message: `Your ${leaveType} request has been approved by HR.`,
-    // });
-
     // Only pending request can be approved
     if (leave.status !== "Pending") {
       throw new Error(`Leave request is already ${leave.status}`);
@@ -411,11 +396,6 @@ const approveLeaveRequest = async (leaveId) => {
 };
 
 const rejectLeaveRequest = async (leaveId) => {
-
-  // =====================================================
-  // GET LEAVE REQUEST
-  // =====================================================
-
   const [leaveRows] = await db.execute(
     `
     SELECT
@@ -433,20 +413,11 @@ const rejectLeaveRequest = async (leaveId) => {
   }
 
   const leave = leaveRows[0];
-
-  // =====================================================
-  // CHECK STATUS
-  // =====================================================
-
   if (leave.status !== "Pending") {
     throw new Error(
       `Leave request is already ${leave.status}`
     );
   }
-
-  // =====================================================
-  // REJECT LEAVE
-  // =====================================================
 
   const [result] = await db.execute(
     `
@@ -474,48 +445,6 @@ const rejectLeaveRequest = async (leaveId) => {
     message: "Leave rejected successfully",
   };
 };
-
-// const rejectLeaveRequest = async (id) => {
-//   const query = `
-//     UPDATE leave_requests
-//     SET
-//       status = 'Rejected',
-//       updated_at = CURRENT_TIMESTAMP
-//     WHERE id = ?
-//     AND status = 'Pending'
-//   `;
-
-//   const [leaveRows] = await db.execute(
-//     `
-//   SELECT user_id, leave_type
-//   FROM leave_requests
-//   WHERE id = ?
-//   `,
-//     [leaveId],
-//   );
-
-//   if (leaveRows.length === 0) {
-//     throw new Error("Leave request not found");
-//   }
-
-//   const employeeId = leaveRows[0].user_id;
-//   const leaveType = leaveRows[0].leave_type;
-
-  
-
-//   const [result] = await db.execute(query, [id]);
-
-//   if (result.affectedRows === 0) {
-//     throw new Error("Leave request not found or already processed");
-//   }
-
-//   return {
-//     leaveId,
-//     status: "Rejected",
-//     message: "Leave rejected successfully",
-//   };
-// };
-
 const getUserLeaveHistory = async (userId) => {
   const [rows] = await db.query(
     `SELECT
