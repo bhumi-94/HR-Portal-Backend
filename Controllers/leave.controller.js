@@ -50,19 +50,10 @@ const requestLeave = async (req, res) => {
       });
     }
 
-    // CALCULATE DURATION
-
     const difference = end.getTime() - start.getTime();
 
     const duration = Math.floor(difference / (1000 * 60 * 60 * 24)) + 1;
-
-    // GET CURRENT LEAVE BALANCE
-
     const summary = await leaveService.getLeaveSummary(userId);
-
-    // CHECK LEAVE BALANCE
-
-    // WFH does not use sick/casual balance
 
     if (leaveType === "Sick Leave") {
       if (duration > summary.sick.remaining) {
@@ -95,14 +86,9 @@ const requestLeave = async (req, res) => {
 
     const employee = await leaveService.getEmployeeById(userId);
 
-    console.log("Employee submitting Leave: " , employee)
-    
     const hrUsers = await notificationService.getHRUsers();
 
     for (const hr of hrUsers) {
-
-      console.log("hr users" , hrUsers)
-
       await notificationService.createNotification({
         userId: hr.id,
         type: "Leave Requests",
@@ -111,7 +97,6 @@ const requestLeave = async (req, res) => {
         referenceId: result.insertId,
       });
     }
-
     try {
       await sendLeaveRequestEmail({
         employee,
@@ -124,8 +109,6 @@ const requestLeave = async (req, res) => {
     } catch (emailError) {
       console.error("Leave saved but email failed:", emailError.message);
     }
-
-    // RESPONSE
 
     return res.status(201).json({
       success: true,
@@ -149,7 +132,6 @@ const requestLeave = async (req, res) => {
 };
 
 // GET LEAVE SUMMARY - EMPLOYEE
-
 const getLeaveSummary = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -252,7 +234,6 @@ const approveLeaveRequest = async (req, res) => {
       message: "Leave approved successfully",
       data: result,
     });
-
   } catch (error) {
     console.error("Approve leave error:", error);
 
@@ -345,8 +326,6 @@ const getUserLeaveHistory = async (req, res) => {
     });
   }
 };
-// EXPORT
-
 module.exports = {
   requestLeave,
   getLeaveSummary,

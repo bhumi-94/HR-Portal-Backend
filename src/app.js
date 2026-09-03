@@ -9,6 +9,7 @@ const attendanceRoutes = require("../routes/attendance.routes");
 const leaveRoutes = require("../routes/leave.routes");
 const holidayRoutes = require("../routes/holiday.routes");
 const notificationRoutes = require("../routes/notification.routes");
+const feedbackRoutes = require("../routes/feedback.routes");
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 app.use(express.json());
@@ -27,5 +28,8 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/leave", leaveRoutes);
 app.use("/api/holidays", holidayRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/feedback", feedbackRoutes);
+
+
 
 module.exports = app;

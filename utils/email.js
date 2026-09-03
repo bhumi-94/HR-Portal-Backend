@@ -1,5 +1,13 @@
 const nodemailer = require("nodemailer");
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
+  },
+});
+
 const sendLeaveRequestEmail = async ({
   employee,
   leaveType,
@@ -8,14 +16,6 @@ const sendLeaveRequestEmail = async ({
   duration,
   reason,
 }) => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD,
-    },
-  });
-
   await transporter.verify();
 
   const employeeName =
@@ -378,10 +378,116 @@ const sendLeaveRequestEmail = async ({
   };
 
   const info = await transporter.sendMail(mailOptions);
-
   return info;
 };
 
+const sendFeedbackEmail = async ({ employee, problem, against, hrUsers }) => {
+  try {
+    const hrEmails = hrUsers
+      .map((hr) => hr.working_email || hr.personal_email)
+      .filter(Boolean);
+
+    // console.log("HR Users:", hrUsers);
+    // console.log("HR Email Addresses:", hrEmails);
+
+    if (hrEmails.length === 0) {
+      throw new Error("No HR email address found");
+    }
+
+    // Check Gmail connection/authentication
+    await transporter.verify();
+
+    console.log("✅ Gmail transporter is ready");
+
+    const employeeName =
+      employee.fullname ||
+      `${employee.firstname || ""} ${employee.lastname || ""}`.trim();
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: hrEmails,
+      subject: `New Employee Feedback - ${employeeName}`,
+
+      html: `
+        <div style="
+          font-family: Arial, sans-serif;
+          background: #f5f3f1;
+          padding: 30px;
+        ">
+
+          <div style="
+            max-width: 650px;
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+          ">
+
+            <h2 style="color: #8b5aa8;">
+              New Employee Feedback
+            </h2>
+
+            <p>
+              <strong>Username:</strong>
+              ${employeeName}
+            </p>
+
+            <p>
+              <strong>Job Title:</strong>
+              ${employee.job_title || "N/A"}
+            </p>
+
+            <p>
+              <strong>Problem:</strong>
+            </p>
+
+            <div style="
+              background: #faf8f6;
+              padding: 15px;
+              border-left: 4px solid #8b5aa8;
+              border-radius: 6px;
+            ">
+              ${problem}
+            </div>
+
+            ${
+              against
+                ? `
+                  <p style="margin-top: 20px;">
+                    <strong>Against:</strong>
+                  </p>
+
+                  <div style="
+                    background: #faf8f6;
+                    padding: 15px;
+                    border-radius: 6px;
+                  ">
+                    ${against}
+                  </div>
+                `
+                : ""
+            }
+
+            <p style="
+              margin-top: 25px;
+              color: #78716c;
+            ">
+              Please review this feedback from the HR Portal.
+            </p>
+
+          </div>
+
+        </div>
+      `,
+    };
+    const info = await transporter.sendMail(mailOptions);
+    return info;
+  } catch (error) {
+    console.error("❌ Feedback email error:", error);
+    throw error;
+  }
+};
 module.exports = {
   sendLeaveRequestEmail,
+  sendFeedbackEmail,
 };

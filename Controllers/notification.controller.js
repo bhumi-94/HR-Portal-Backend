@@ -57,11 +57,6 @@ const getUnreadNotifications = async (req, res) => {
   }
 };
 
-
-// =====================================================
-// MARK ONE AS READ
-// =====================================================
-
 const markAsRead = async (req, res) => {
 
   try {
@@ -100,11 +95,6 @@ const markAsRead = async (req, res) => {
     });
   }
 };
-
-
-// =====================================================
-// MARK ALL AS READ
-// =====================================================
 
 const markAllAsRead = async (req, res) => {
 
