@@ -11,7 +11,7 @@ The backend is built using **Node.js, Express.js, and MySQL** and provides secur
 The frontend of the HR Portal is built with React and deployed on Vercel.
 
 👉 **Live Frontend:**  
-https://your-frontend-url.vercel.app
+https://hr-portal-aqoh05930-bhumi-94s-projects.vercel.app/login
 
 ---
 
