@@ -1,6 +1,6 @@
 const userService = require("../Services/user.service");
-const  db = require("../Configurations/db.config") 
-
+const db = require("../Configurations/db.config");
+const logError = require("../utils/errorLogger");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -10,9 +10,8 @@ const getAllUsers = async (req, res) => {
       success: true,
       users: users,
     });
-
   } catch (error) {
-    console.error("GET ALL USERS ERROR:", error);
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
@@ -21,22 +20,23 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-// UPDATE USER STATUS
-
 const updateUserStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive } = req.body;
+
     if (isActive !== 0 && isActive !== 1) {
       return res.status(400).json({
         success: false,
         message: "isActive must be 0 or 1",
       });
     }
+
     const user = await userService.updateUserStatus(
       id,
       isActive
     );
+
     return res.status(200).json({
       success: true,
       message:
@@ -46,35 +46,41 @@ const updateUserStatus = async (req, res) => {
       user,
     });
   } catch (error) {
-    console.error("UPDATE USER STATUS ERROR:", error);
+    logError(req, error);
+
     return res.status(500).json({
       success: false,
       message: error.message || "Failed to update user status",
     });
   }
-}
+};
+
 const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
+
     const user = await User.findByIdAndDelete(id);
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
       });
     }
+
     res.status(200).json({
       success: true,
       message: "User deleted successfully",
     });
   } catch (error) {
+    logError(req, error);
+
     res.status(500).json({
       success: false,
       message: "Failed to delete user",
     });
   }
 };
-
 
 const uploadProfilePic = async (req, res) => {
   try {
@@ -97,9 +103,8 @@ const uploadProfilePic = async (req, res) => {
       message: "Profile picture updated successfully",
       profile_image,
     });
-
   } catch (error) {
-    console.error("Profile picture upload error:", error);
+    logError(req, error);
 
     return res.status(500).json({
       success: false,

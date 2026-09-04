@@ -1,10 +1,8 @@
 const notificationService = require("../Services/notification.service");
-
+const logError = require("../utils/errorLogger");
 
 const getMyNotifications = async (req, res) => {
-
   try {
-
     const userId = req.user.id;
 
     const notifications =
@@ -14,13 +12,8 @@ const getMyNotifications = async (req, res) => {
       success: true,
       data: notifications,
     });
-
   } catch (error) {
-
-    console.error(
-      "Get notifications error:",
-      error
-    );
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
@@ -30,9 +23,7 @@ const getMyNotifications = async (req, res) => {
 };
 
 const getUnreadNotifications = async (req, res) => {
-
   try {
-
     const userId = req.user.id;
 
     const notifications =
@@ -42,13 +33,8 @@ const getUnreadNotifications = async (req, res) => {
       success: true,
       data: notifications,
     });
-
   } catch (error) {
-
-    console.error(
-      "Get unread notifications error:",
-      error
-    );
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
@@ -58,11 +44,8 @@ const getUnreadNotifications = async (req, res) => {
 };
 
 const markAsRead = async (req, res) => {
-
   try {
-
     const { notificationId } = req.params;
-
     const userId = req.user.id;
 
     if (!notificationId) {
@@ -81,13 +64,8 @@ const markAsRead = async (req, res) => {
       success: true,
       message: "Notification marked as read",
     });
-
   } catch (error) {
-
-    console.error(
-      "Mark notification read error:",
-      error
-    );
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
@@ -97,9 +75,7 @@ const markAsRead = async (req, res) => {
 };
 
 const markAllAsRead = async (req, res) => {
-
   try {
-
     const userId = req.user.id;
 
     await notificationService.markAllNotificationsAsRead(
@@ -110,13 +86,8 @@ const markAllAsRead = async (req, res) => {
       success: true,
       message: "All notifications marked as read",
     });
-
   } catch (error) {
-
-    console.error(
-      "Mark all notifications error:",
-      error
-    );
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
@@ -124,7 +95,6 @@ const markAllAsRead = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   getMyNotifications,

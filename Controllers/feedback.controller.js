@@ -1,6 +1,7 @@
 const feedbackService = require("../Services/feedback.service");
 const notificationService = require("../Services/notification.service");
 const { sendFeedbackEmail } = require("../utils/email");
+const logError = require("../utils/errorLogger");
 
 const submitFeedback = async (req, res) => {
   try {
@@ -53,7 +54,7 @@ const submitFeedback = async (req, res) => {
       data: feedback,
     });
   } catch (error) {
-    console.error("Submit feedback error:", error);
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
@@ -74,7 +75,7 @@ const getMyFeedback = async (req, res) => {
       data: feedback,
     });
   } catch (error) {
-    console.error("Get feedback error:", error);
+    logError(req, error);
 
     return res.status(500).json({
       success: false,
