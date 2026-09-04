@@ -1,10 +1,9 @@
 const authService = require("../Services/auth.service");
 const signupSchema = require("../Validation/signupSchema");
+const logError = require("../utils/errorLogger");
 
-// REGISTER
 const register = async (req, res) => {
   try {
-    
     const {
       firstname,
       lastname,
@@ -17,15 +16,10 @@ const register = async (req, res) => {
       department,
       job_title,
       password
-    } = req.body || {} 
-
-    console.log("PASSWORD IN CONTROLLER:", password);
-    
-    // Get uploaded profile image
+    } = req.body || {};
     const profileImage = req.file
       ? `/uploads/${req.file.filename}`
       : null;
-
     const result = await authService.registerUser({
       firstname,
       lastname,
@@ -40,58 +34,48 @@ const register = async (req, res) => {
       password,
       profileImage,
     });
-
     res.status(201).json({
       success: true,
       message: "Registration successful",
       ...result
     });
-
   } catch (error) {
-    console.error("REGISTER ERROR:", error);
-
+    logError(req, error);
     res.status(500).json({
       success: false,
       message: error.message || "Registration failed"
     });
   }
 };
-
-
-// LOGIN
-
 const login = async (req, res) => {
   try {
-    const { email, password  } = req.body;
-
+    const { email, password } = req.body;
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: "Email/Username and password are required",
       });
     }
-    const result = await authService.loginUser(email , password);
+    const result = await authService.loginUser(email, password);
     return res.status(200).json({
       success: true,
       message: "Login successful",
       ...result,
     });
   } catch (error) {
+    logError(req, error);
     return res.status(401).json({
       success: false,
       message: error.message,
     });
   }
 };
-// FORGOT PASSWORD
 const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-
     if (!email) {
       return res.status(400).json({
         success: false,
-
         message: "Email is required",
       });
     }
@@ -101,18 +85,16 @@ const forgotPassword = async (req, res) => {
       message: result.message,
     });
   } catch (error) {
-    console.error("Forgot Password Error:", error);
+    logError(req, error);
     return res.status(500).json({
       success: false,
       message: error.message,
     });
   }
 };
-// RESET PASSWORD
 const resetPassword = async (req, res) => {
   try {
     const { token, password } = req.body;
-    console.log("RESET TOKEN:", token);
     if (!token) {
       return res.status(400).json({
         success: false,
@@ -131,14 +113,13 @@ const resetPassword = async (req, res) => {
       message: "Password reset successfully",
     });
   } catch (error) {
-    console.error("Reset Password Error:", error);
+    logError(req, error);
     return res.status(400).json({
       success: false,
       message: error.message,
     });
   }
 };
-
 const getCurrentUser = async (req, res) => {
   try {
     const user = await authService.getCurrentUser(
@@ -149,6 +130,7 @@ const getCurrentUser = async (req, res) => {
       user,
     });
   } catch (error) {
+    logError(req, error);
     return res.status(500).json({
       success: false,
       message: error.message,

@@ -232,6 +232,7 @@ const getAllLeaveRequests = async () => {
     FROM leave_requests lr
 
     INNER JOIN users u
+    
       ON lr.user_id = u.id
 
     ORDER BY lr.created_at DESC
