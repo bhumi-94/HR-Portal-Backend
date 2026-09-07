@@ -8,5 +8,4 @@ const logError = (req, error) => {
   console.error("Stack:", error.stack);
   console.error("========================================");
 };
-
 module.exports = logError;
