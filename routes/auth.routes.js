@@ -5,6 +5,7 @@ const {
   login,
   forgotPassword,
   resetPassword,
+  googleLogin,
   getCurrentUser,
 } = require("../Controllers/auth.Controller");
 
@@ -23,6 +24,8 @@ router.post("/register", register);
 // LOGIN
 router.post("/login", login);
 
+// google
+router.post("/google", googleLogin);
 // FORGOT PASSWORD
 router.post("/forgot-password", forgotPassword);
 

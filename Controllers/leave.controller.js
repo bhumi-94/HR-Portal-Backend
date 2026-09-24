@@ -199,9 +199,6 @@ const approveLeaveRequest = async (req, res) => {
   try {
     const { leaveId } = req.params;
 
-    console.log("========== APPROVE LEAVE ==========");
-    console.log("Leave ID:", leaveId);
-
     if (!leaveId) {
       return res.status(400).json({
         success: false,
@@ -210,8 +207,6 @@ const approveLeaveRequest = async (req, res) => {
     }
 
     const leave = await leaveService.getLeaveRequestById(leaveId);
-
-    console.log("Leave request:", leave);
 
     if (!leave) {
       return res.status(404).json({
@@ -222,8 +217,7 @@ const approveLeaveRequest = async (req, res) => {
 
     const result = await leaveService.approveLeaveRequest(leaveId);
 
-    console.log("Approve result:", result);
-
+    
     await notificationService.createNotification({
       userId: leave.user_id,
       type: "LEAVE_APPROVED",
@@ -231,10 +225,6 @@ const approveLeaveRequest = async (req, res) => {
       message: `Your ${leave.leave_type} request has been approved by HR.`,
     });
 
-    console.log(
-      "Approval notification created for user:",
-      leave.user_id
-    );
 
     return res.status(200).json({
       success: true,
@@ -255,9 +245,6 @@ const rejectLeaveRequest = async (req, res) => {
   try {
     const { leaveId } = req.params;
 
-    console.log("========== REJECT LEAVE ==========");
-    console.log("Leave ID:", leaveId);
-
     if (!leaveId) {
       return res.status(400).json({
         success: false,
@@ -266,8 +253,6 @@ const rejectLeaveRequest = async (req, res) => {
     }
 
     const leave = await leaveService.getLeaveRequestById(leaveId);
-
-    console.log("Leave request:", leave);
 
     if (!leave) {
       return res.status(404).json({
@@ -278,8 +263,6 @@ const rejectLeaveRequest = async (req, res) => {
 
     const result = await leaveService.rejectLeaveRequest(leaveId);
 
-    console.log("Reject result:", result);
-
     await notificationService.createNotification({
       userId: leave.user_id,
       type: "LEAVE_REJECTED",
@@ -287,10 +270,6 @@ const rejectLeaveRequest = async (req, res) => {
       message: `Your ${leave.leave_type} request has been rejected by HR.`,
     });
 
-    console.log(
-      "Rejection notification created for user:",
-      leave.user_id
-    );
 
     return res.status(200).json({
       success: true,
@@ -309,19 +288,8 @@ const rejectLeaveRequest = async (req, res) => {
 
 const getUserLeaveHistory = async (req, res) => {
   try {
-    console.log("========== HISTORY API START ==========");
-    console.log("REQ.USER:", req.user);
-
     const userId = req.user.id;
-
-    console.log("USER ID:", userId);
-    console.log("Calling leaveService.getMyLeaveRequests...");
-
     const history = await leaveService.getMyLeaveRequests(userId);
-
-    console.log("SERVICE COMPLETED");
-    console.log("HISTORY:", history);
-
     return res.status(200).json({
       success: true,
       data: history,

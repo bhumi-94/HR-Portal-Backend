@@ -2,6 +2,36 @@ const authService = require("../Services/auth.service");
 const signupSchema = require("../Validation/signupSchema");
 const logError = require("../utils/errorLogger");
 
+
+const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "Google credential is required",
+      });
+    }
+
+    const result = await authService.googleLoginUser(credential);
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      ...result,
+    });
+  } catch (error) {
+    console.error("Google Login Controller Error:", error);
+
+    return res.status(401).json({
+      success: false,
+      message: error.message || "Google login failed",
+    });
+  }
+};
+
+
 const register = async (req, res) => {
   try {
     const {
@@ -143,5 +173,6 @@ module.exports = {
   login,
   forgotPassword,
   resetPassword,
-  getCurrentUser
+  getCurrentUser,
+  googleLogin
 };
