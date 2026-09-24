@@ -1,3 +1,4 @@
+const { OAuth2Client } = require("google-auth-library");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
@@ -7,6 +8,9 @@ const sendResetEmail = require("../utils/sendEmail");
 const db = require("../Configurations/db.config")
 
 // REGISTER
+const googleClient = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID
+);
 
 const registerUser = async ({
   firstname,
@@ -37,7 +41,6 @@ const registerUser = async ({
   }
 
 
-  console.log("PASSWORD RECEIVED IN SERVICE:", password);
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -85,7 +88,6 @@ const employeeId = `SPTL${String(result.insertId).padStart(2, "0")}`;
    WHERE id = ?`,
   [employeeId, result.insertId]
 );
-console.log(result.insertId)
 
 await db.query(
   `UPDATE users
@@ -156,6 +158,113 @@ const loginUser = async (email, password) => {
     },
   };
 };
+
+const googleLoginUser = async (credential) => {
+  try {
+    if (!credential) {
+      throw new Error("Google credential is required");
+    }
+
+    // Verify Google ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    if (!payload) {
+      throw new Error("Invalid Google token");
+    }
+
+    const {
+      sub,
+      email,
+      email_verified,
+      given_name,
+      family_name,
+      picture,
+    } = payload;
+
+    // Google email must be verified
+    if (!email_verified) {
+      throw new Error("Google email is not verified");
+    }
+
+    // Find existing HR Portal user
+    const [users] = await db.execute(
+      `SELECT * FROM users WHERE email = ? LIMIT 1`,
+      [email]
+    );
+
+    if (users.length === 0) {
+      throw new Error(
+        "No HR Portal account found for this Google email. Please contact HR."
+      );
+    }
+
+    const user = users[0];
+
+    // Check whether account is active
+    if (user.isActive === 0 || user.isActive === false) {
+      throw new Error(
+        "Your HR Portal account is inactive. Please contact HR."
+      );
+    }
+    if (user.google_id && user.google_id !== sub) {
+      throw new Error(
+        "This Google account is not linked to your HR Portal account."
+      );
+    }
+    if (!user.google_id) {
+      await db.execute(
+        `UPDATE users SET google_id = ? WHERE id = ?`,
+        [sub, user.id]
+      );
+
+      user.google_id = sub;
+    }
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+      },
+      process.env.JWT_SECRET_KEY,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    const userResponse = {
+      id: user.id,
+      employee_id: user.employee_id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      username: user.username,
+      email: user.email,
+      personal_email: user.personal_email,
+      working_email: user.working_email,
+      phone: user.phone,
+      address: user.address,
+      gender: user.gender,
+      department: user.department,
+      job_title: user.job_title,
+      profile_image: user.profile_image || picture || null,
+      role: user.role,
+      isActive: user.isActive,
+    };
+
+    return {
+      token,
+      user: userResponse,
+    };
+  } catch (error) {
+    console.error("Google Login Error:", error);
+    throw error;
+  }
+};
+
 // FORGOT PASSWORD
 const forgotPassword = async (email) => {
   // 1. Find user
@@ -273,5 +382,6 @@ module.exports = {
   loginUser,
   forgotPassword,
   resetPassword,
-  getCurrentUser
+  getCurrentUser,
+  googleLoginUser
 };

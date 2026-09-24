@@ -7,6 +7,6 @@ const db = mysql.createPool({
   database: process.env.DB_NAME,
 });
 
-console.log("MySQL pool created successfully");
+// console.log("MySQL pool created successfully");
 
 module.exports = db;

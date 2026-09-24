@@ -184,9 +184,6 @@ const getLeaveSummary = async (userId) => {
 
 // GET MY LEAVE REQUESTS
 const getMyLeaveRequests = async (userId) => {
-  console.log("========== GET MY LEAVE REQUESTS ==========");
-
-  console.log("Received userId:", userId);
 
   const query = `
     SELECT
@@ -273,7 +270,7 @@ const approveLeaveRequest = async (leaveId) => {
     const leaveType = leaveRows[0].leave_type;
     const leave = leaveRows[0];
 
-    console.log("Leave being approved:", leave);
+    
     // Only pending request can be approved
     if (leave.status !== "Pending") {
       throw new Error(`Leave request is already ${leave.status}`);
