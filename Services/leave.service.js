@@ -28,7 +28,7 @@ const createLeaveRequest = async ({
     userId,
     leaveType,
     startDate,
-    endDate,
+    endDate,  
     duration,
     reason,
   ]);
