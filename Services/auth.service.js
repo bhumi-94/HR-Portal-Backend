@@ -103,26 +103,23 @@ await db.query(
     profile_image:profileImage,
   };
 };
+
 const loginUser = async (email, password) => {
-  // 1. Find user
   const [users] = await db.query(
     "SELECT * FROM users WHERE email = ?",
     [email]
   );
 
-  // 2. User doesn't exist
   if (users.length === 0) {
     throw new Error("Invalid email or password");
   }
 
   const user = users[0];
 
-  // 3. Check whether account is active
   if (Number(user.isActive) !== 1) {
     throw new Error("Your account has been disabled by HR");
   }
 
-  // 4. Check password
   const isPasswordCorrect = await bcrypt.compare(
     password,
     user.password
@@ -142,7 +139,6 @@ const loginUser = async (email, password) => {
     expiresIn: "7d",
   }
 );
-  // 6. Return user + token
   return {
     token,
     user: {
@@ -165,7 +161,6 @@ const googleLoginUser = async (credential) => {
       throw new Error("Google credential is required");
     }
 
-    // Verify Google ID token
     const ticket = await googleClient.verifyIdToken({
       idToken: credential,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -177,21 +172,14 @@ const googleLoginUser = async (credential) => {
       throw new Error("Invalid Google token");
     }
 
-    const {
-      sub,
-      email,
-      email_verified,
-      given_name,
-      family_name,
-      picture,
-    } = payload;
+    const googleId = payload.sub;
+    const email = payload.email;
+    const emailVerified = payload.email_verified;
+    
+    if (!email || !payload.email_verified) {
+    throw new Error("Google email is not verified");
+}
 
-    // Google email must be verified
-    if (!email_verified) {
-      throw new Error("Google email is not verified");
-    }
-
-    // Find existing HR Portal user
     const [users] = await db.execute(
       `SELECT * FROM users WHERE email = ? LIMIT 1`,
       [email]
@@ -205,26 +193,20 @@ const googleLoginUser = async (credential) => {
 
     const user = users[0];
 
-    // Check whether account is active
-    if (user.isActive === 0 || user.isActive === false) {
-      throw new Error(
-        "Your HR Portal account is inactive. Please contact HR."
-      );
+    if (Number(user.isActive) !== 1) {
+      throw new Error("Your account is inactive");
     }
-    if (user.google_id && user.google_id !== sub) {
-      throw new Error(
-        "This Google account is not linked to your HR Portal account."
-      );
-    }
+
     if (!user.google_id) {
       await db.execute(
-        `UPDATE users SET google_id = ? WHERE id = ?`,
-        [sub, user.id]
+        "UPDATE users SET google_id = ? WHERE id = ?",
+        [googleId, user.id]
       );
-
-      user.google_id = sub;
+    } else if (user.google_id !== googleId) {
+      throw new Error(
+        "This account is linked with another Google account"
+      );
     }
-
     const token = jwt.sign(
       {
         id: user.id,
@@ -235,29 +217,24 @@ const googleLoginUser = async (credential) => {
         expiresIn: "7d",
       }
     );
-
-    const userResponse = {
-      id: user.id,
-      employee_id: user.employee_id,
-      firstname: user.firstname,
-      lastname: user.lastname,
-      username: user.username,
-      email: user.email,
-      personal_email: user.personal_email,
-      working_email: user.working_email,
-      phone: user.phone,
-      address: user.address,
-      gender: user.gender,
-      department: user.department,
-      job_title: user.job_title,
-      profile_image: user.profile_image || picture || null,
-      role: user.role,
-      isActive: user.isActive,
-    };
-
     return {
       token,
-      user: userResponse,
+      user: {
+        id: user.id,
+        employee_id: user.employee_id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        username: user.username,
+        email: user.email,
+        personal_email: user.personal_email,
+        working_email: user.working_email,
+        phone: user.phone,
+        department: user.department,
+        job_title: user.job_title,
+        role: user.role,
+        isActive: user.isActive,
+        profile_image: user.profile_image,
+      },
     };
   } catch (error) {
     console.error("Google Login Error:", error);
@@ -275,28 +252,23 @@ const forgotPassword = async (email) => {
       "User not found"
     );
   }
-  // 2. Generate token
   const resetToken =
     crypto.randomBytes(32).toString("hex");
-  // 3. Expiry = 30 minutes
   const resetTokenExpiry =
     new Date(
       Date.now() + 30 * 60 * 1000
     );
-  // 4. Save token in database
   await userModel.saveResetToken(
     user.id,
     resetToken,
     resetTokenExpiry
   );
-  // 5. Create FRONTEND reset URL
     const resetUrl =
     `http://localhost:5173/reset-password/${resetToken}`;
   console.log(
     "Reset URL:",
     resetUrl
   );
-  // 6. Send email
   await sendResetEmail(
     email,
     resetUrl
@@ -306,12 +278,10 @@ const forgotPassword = async (email) => {
       "Reset password link sent to your email"
   };
 };
-// RESET PASSWORD
 const resetPassword = async (
   token,
   newPassword
 ) => {
-  // 1. Find user by token
   const user =
     await userModel.findUserByResetToken(
       token
@@ -321,7 +291,6 @@ const resetPassword = async (
       "Invalid or expired reset token"
     );
   }
-  // 2. Check token expiry
   if (
     !user.reset_token_expiry ||
     new Date(user.reset_token_expiry) < new Date()
@@ -330,13 +299,11 @@ const resetPassword = async (
       "Reset token has expired"
     );
   }
-  // 3. Hash new password
   const hashedPassword =
     await bcrypt.hash(
       newPassword,
       10
     );
-  // 4. Update password
   await userModel.updatePassword(
     user.id,
     hashedPassword
