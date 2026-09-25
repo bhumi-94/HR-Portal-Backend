@@ -6,7 +6,7 @@ const notificationController =
   require("../Controllers/notification.controller");
 
 const authMiddleware =
-  require("../Middleware/auth.middleware");
+  require("../middleware/auth.middleware");
 
 
 // GET ALL MY NOTIFICATIONS
