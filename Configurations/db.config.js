@@ -1,6 +1,16 @@
 const mysql = require("mysql2/promise");
 const fs = require("fs");
 
+const sslConfig = process.env.DB_SSL_CA
+  ? {
+      ca: process.env.DB_SSL_CA.replace(/\\n/g, "\n"),
+      rejectUnauthorized: true,
+    }
+  : {
+      ca: fs.readFileSync(process.env.DB_SSL_CA_PATH),
+      rejectUnauthorized: true,
+    };
+
 const db = mysql.createPool({
   host: process.env.DB_HOST,
   port: process.env.DB_PORT || 3306,
@@ -8,20 +18,7 @@ const db = mysql.createPool({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
 
-  ssl: {
-    ca: fs.readFileSync(process.env.DB_SSL_CA_PATH),
-    rejectUnauthorized: true,
-  },
+  ssl: sslConfig,
 });
 
-
-db.getConnection()
-  .then((connection) => {
-    console.log("✅ Aiven MySQL connected successfully!");
-    connection.release();
-  })
-  .catch((error) => {
-    console.error("❌ Aiven MySQL connection failed:");
-    console.error(error.message);
-  });
 module.exports = db;
