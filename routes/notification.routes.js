@@ -8,36 +8,22 @@ const notificationController =
 const authMiddleware =
   require("../middleware/auth.middleware");
 
-
-// GET ALL MY NOTIFICATIONS
-
 router.get(
   "/",
   authMiddleware,
   notificationController.getMyNotifications
 );
-
-
-// GET UNREAD NOTIFICATIONS
-
 router.get(
   "/unread",
   authMiddleware,
   notificationController.getUnreadNotifications
 );
 
-
-// MARK ONE AS READ
-
 router.patch(
   "/:notificationId/read",
   authMiddleware,
   notificationController.markAsRead
 );
-
-
-// MARK ALL AS READ
-
 router.patch(
   "/read-all",
   authMiddleware,
