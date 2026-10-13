@@ -14,7 +14,6 @@ const holidayRoutes = require("../routes/holiday.routes");
 const notificationRoutes = require("../routes/notification.routes");
 const feedbackRoutes = require("../routes/feedback.routes");
 
-// CORS
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://hr-portal-silk-five.vercel.app"],
@@ -22,14 +21,11 @@ app.use(
   }),
 );
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
-// Root route - Backend health check
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
@@ -37,7 +33,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/attendance", attendanceRoutes);

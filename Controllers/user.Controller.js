@@ -1,6 +1,8 @@
 const userService = require("../Services/user.service");
 const db = require("../Configurations/db.config");
 const logError = require("../utils/errorLogger");
+const cloudinary = require("../Configurations/cloudinary");
+const fs = require("fs");
 
 const getAllUsers = async (req, res) => {
   try {
@@ -32,10 +34,7 @@ const updateUserStatus = async (req, res) => {
       });
     }
 
-    const user = await userService.updateUserStatus(
-      id,
-      isActive
-    );
+    const user = await userService.updateUserStatus(id, isActive);
 
     return res.status(200).json({
       success: true,
@@ -83,6 +82,8 @@ const deleteUser = async (req, res) => {
 };
 
 const uploadProfilePic = async (req, res) => {
+  let uploadedFilePath;
+
   try {
     if (!req.file) {
       return res.status(400).json({
@@ -91,12 +92,19 @@ const uploadProfilePic = async (req, res) => {
       });
     }
 
-    const profile_image = `/uploads/${req.file.filename}`;
+    uploadedFilePath = req.file.path;
 
-    await db.query(
-      "UPDATE users SET profile_image = ? WHERE id = ?",
-      [profile_image, req.user.id]
-    );
+    const uploadedImage = await cloudinary.uploader.upload(uploadedFilePath, {
+      folder: "hr-portal/profile-images",
+      resource_type: "image",
+    });
+
+    const profile_image = uploadedImage.secure_url;
+
+    await db.query("UPDATE users SET profile_image = ? WHERE id = ?", [
+      profile_image,
+      req.user.id,
+    ]);
 
     return res.status(200).json({
       success: true,
@@ -111,12 +119,54 @@ const uploadProfilePic = async (req, res) => {
       message: "Failed to update profile picture",
       error: error.message,
     });
+  } finally {
+    if (uploadedFilePath) {
+      try {
+        await fs.promises.unlink(uploadedFilePath);
+      } catch (cleanupError) {
+        console.error(
+          "Failed to remove temporary profile image:",
+          cleanupError.message,
+        );
+      }
+    }
   }
 };
+// const uploadProfilePic = async (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Please select an image",
+//       });
+//     }
+
+//     const profile_image = `/uploads/${req.file.filename}`;
+
+//     await db.query(
+//       "UPDATE users SET profile_image = ? WHERE id = ?",
+//       [profile_image, req.user.id]
+//     );
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Profile picture updated successfully",
+//       profile_image,
+//     });
+//   } catch (error) {
+//     logError(req, error);
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to update profile picture",
+//       error: error.message,
+//     });
+//   }
+// };
 
 module.exports = {
   getAllUsers,
   updateUserStatus,
   deleteUser,
-  uploadProfilePic
+  uploadProfilePic,
 };
